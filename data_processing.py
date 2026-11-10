@@ -10,6 +10,21 @@ with open(os.path.join(__location__, 'Cities.csv')) as f:
         cities.append(dict(r))
 
 
+def filter_items(condition, dict_list):
+    result = []
+    for item in dict_list:
+        if condition(item):
+            result.append(item)
+    return result
+
+
+def aggregate(aggregation_key, aggregation_function, dict_list):
+    value = []
+    for item in dict_list:
+        value.append(item[aggregation_key])
+    return aggregation_function(value)
+
+
 for city in cities[:5]:
     print(city)
 
@@ -23,33 +38,26 @@ print()
 
 
 print("The average temperature of all the cities:")
-temps = [float(city['temperature']) for city in cities]
-print(sum(temps)/len(temps))
+print(aggregate("temperature", lambda temp : (sum(map(float, temp))) / len(temp), cities))
 print()
 
 
 print("All cities in Germany:")
-All = []
-Germany = filter(lambda city: city["country"] == "Germany", cities)
-for city in Germany:
-    All.append(city["city"])
-print(All)
+Germany = filter_items(lambda x: x["country"] == "Germany", cities)
+print(aggregate("city", lambda c: c,Germany))
 print()
 
 
 print("All cities in Spain with a temperature above 12°C")
-All = []
-Spain = filter(lambda city: city["country"] == "Spain" and float(city["temperature"]) > 12, cities)
-for city in Spain:
-    All.append(city["city"])
-print(All)
+Spain = filter_items(lambda s: s["country"] == "Spain" and float(s["temperature"]) > 12, cities)
+print(aggregate("city", lambda s : s, Spain))
 print()
 
 
 print("Number of unique countries")
 unique = []
 count = 0
-All = list(map(lambda city: city["country"], cities))
+All = aggregate("country", lambda c:c, cities)
 for country in All:
     if country not in unique:
         unique.append(country)
@@ -60,19 +68,12 @@ print()
 
 
 print("The average temperature for all the cities in Germany")
-Avg = list(filter(lambda city: city["country"] == "Germany", cities))
-total = 0
-count = 0 
-for city in Avg:
-    total += float(city["temperature"])
-    count += 1
-average = total / count
-print(average)
+Avg = filter_items(lambda a: a["country"] == "Germany", cities)
+print(aggregate("temperature", lambda v: (sum(map(float, v))) / len(v), Avg))
 print()
 
 
 print("The max temperature for all the cities in Italy")
-Italy = filter(lambda city: city["country"] == "Italy", cities)
-max_temp = max(Italy, key = lambda city: float(city["temperature"]))
-print(float(max_temp["temperature"]))
+Italy = filter_items(lambda i: i["country"] == "Italy", cities)
+print(aggregate("temperature", lambda i: max(map(float, i)), Italy))
 print()
